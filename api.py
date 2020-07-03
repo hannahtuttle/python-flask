@@ -16,22 +16,34 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 db = SQLAlchemy(app)
 
 # Models
-class User(db.Model):
-    __tablename__ = 'users'
+class Patients(db.Model):
+    __tablename__ = 'patients'
     uuid = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(256), index=True, unique=True)
-    # posts = db.relationship('Post', backref='author')
+    parent = db.Column(db.Boolean)
+    doctors = db.relationship('Connections', backref='patients')
+    # child = db.relationship('Post', backref='author')
     
     def __repr__(self):
-        return '<User %r>' % self.username
-class Post(db.Model):
-    __tablename__ = 'posts'
+        return '<Patient: %r>' % self.username
+class Doctors(db.Model):
+    __tablename__ = 'doctors'
     uuid = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(256), index=True)
-    body = db.Column(db.Text)
-    author_id = db.Column(db.Integer, db.ForeignKey('users.uuid'))
+    name = db.Column(db.String(256), index=True)
+    title = db.Column(db.Text)
+    licence = db.Column(db.String(256), index=True)
+    doctors = db.relationship('Connections', backref='doctors')
+    # patient_id = db.Column(db.Integer, db.ForeignKey('users.uuid'))
     def __repr__(self):
-        return '<Post %r>' % self.title
+        return '<Doctor: %r>' % self.title
+class Connection(db.Model):
+    __tablename__ = 'connnections'
+    uuid = db.Column(db.Integer, primary_key=True)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('doctors.uuid'))
+    patient_id = db.Column(db.Integer, db.ForeignKey('patient.uuid'))
+    
+    def __repr__(self):
+        return '<Patients %r>' % self.title
 
 
 @app.route('/', methods=['GET'])
