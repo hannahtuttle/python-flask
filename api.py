@@ -23,9 +23,12 @@ class Patients(db.Model):
     parent = db.Column(db.Boolean)
     doctors = db.relationship('Connections', backref='patients')
     # child = db.relationship('Post', backref='author')
-    
     def __repr__(self):
         return '<Patient: %r>' % self.username
+class Child(db.Model):
+    __tablename__ = 'child'
+    uuid = db.Column(db.Integer)
+    parent_id = db.Column(db.Integer, db.ForeignKey('patient.uuid'))
 class Doctors(db.Model):
     __tablename__ = 'doctors'
     uuid = db.Column(db.Integer, primary_key=True)
@@ -41,7 +44,13 @@ class Connection(db.Model):
     uuid = db.Column(db.Integer, primary_key=True)
     doctor_id = db.Column(db.Integer, db.ForeignKey('doctors.uuid'))
     patient_id = db.Column(db.Integer, db.ForeignKey('patient.uuid'))
-    
+    permission = db.Column(db.Boolean)
+    def __repr__(self):
+        return '<Patients %r>' % self.title
+class Immunizations(db.Model):
+    __tablename__ = 'immunizations'
+    uuid = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(256), index = True)
     def __repr__(self):
         return '<Patients %r>' % self.title
 
