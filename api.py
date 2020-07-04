@@ -44,6 +44,7 @@ class Connection(db.Model):
     uuid = db.Column(db.Integer, primary_key=True)
     doctor_id = db.Column(db.Integer, db.ForeignKey('doctors.uuid'))
     patient_id = db.Column(db.Integer, db.ForeignKey('patient.uuid'))
+    immunization = db.Column(db.Integer, db.ForeignKey('immunization.uuid'))
     permission = db.Column(db.Boolean)
     def __repr__(self):
         return '<Patients %r>' % self.title
@@ -51,6 +52,7 @@ class Immunizations(db.Model):
     __tablename__ = 'immunizations'
     uuid = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(256), index = True)
+    connection_point = db.relationship('Connections', backref='immunizaions')
     def __repr__(self):
         return '<Patients %r>' % self.title
 
