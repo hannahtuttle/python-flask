@@ -63,46 +63,71 @@ class Immunizations(db.Model):
         return '<Patients %r>' % self.title
 
 #Schema Objects
-class ParentObject(SQLAlchemyObjectType):
-    class meta:
+class PatientsObject(SQLAlchemyObjectType):
+    class Meta:
         model = Patients
         interfaces = (graphene.relay.Node, )
 
 class ChildObject(SQLAlchemyObjectType):
-    class meta:
+    class Meta:
         model = Child
         interfaces = (graphene.relay.Node, )
 
 class DoctorObject(SQLAlchemyObjectType):
-    class meta:
+    class Meta:
         model = Doctors
         interfaces = (graphene.relay.Node, )
 
 class ConnectionObject(SQLAlchemyObjectType):
-    class meta:
+    class Meta:
         model = Connection
         interfaces = (graphene.relay.Node, )
 
 class ImmunizationObject(SQLAlchemyObjectType):
-    class meta:
+    class Meta:
         model = Immunizations
         interfaces = (graphene.relay.Node, )
 
 class Query(graphene.ObjectType):
     node = graphene.relay.Node.Field()
-    all_Patients = SQLAlchemyConnectionField(PatientObject)
+    all_Patients = SQLAlchemyConnectionField(PatientsObject)
     all_children = SQLAlchemyConnectionField(ChildObject)
     all_Doctors = SQLAlchemyConnectionField(DoctorObject)
     all_Connections = SQLAlchemyConnectionField(ConnectionObject)
     all_Immunizations = SQLAlchemyConnectionField(ImmunizationObject)
 
-schema = graphene.Schema(query=Query)
+class AddChild(graphene.Mutation):
+    class Arguments:
+        name = graphene.String(required=True)
+        parent_username = graphene.String(required=True)
+    child = graphene.Field(lambda: ChildObject)
+    def mutate(self, info, name, username):
+        patient = Patients.query.filter_by(username=parent_username).first()
+        child = Child(name=name)
+        if patient is not None:
+            child.parent_id = patient.uuid
+        db.session.add(child)
+        db.session.commit()
+        return AddChild(child=child)
+class Mutation(graphene.ObjectType):
+    add_child = AddChild.Field()
+
+schema = graphene.Schema(query=Query, mutation=Mutation)
 
 
-@app.route('/', methods=['GET'])
-def home():
-    return "<h1>Distant Reading Archive</h1><p>This site is a prototype API for distant reading of science fiction novels.</p>"
+@app.route('/')
+def index():
+    return '<p> Hello World</p>'
 
+
+app.add_url_rule(
+    '/graphql',
+    view_func=GraphQLView.as_view(
+        'graphql',
+        schema=schema,
+        graphiql=True # for having the GraphiQL interface
+    )
+)
 
 
 if __name__ == '__main__':
