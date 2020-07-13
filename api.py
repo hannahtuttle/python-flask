@@ -23,7 +23,7 @@ class Patients(db.Model):
     uuid = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(256), index=True, unique=True)
     parent = db.Column(db.Boolean)
-    doctors = db.relationship('Connections', backref='patients')
+    # doctors = db.relationship('Connections', backref='patients')
     # child = db.relationship('Post', backref='author')
     def __repr__(self):
         return '<Patient: %r>' % self.username
@@ -38,7 +38,7 @@ class Doctors(db.Model):
     name = db.Column(db.String(256), index=True)
     title = db.Column(db.Text)
     licence = db.Column(db.String(256), index=True)
-    doctors = db.relationship('connections', backref='doctors')
+    # doctors = db.relationship('connections', backref='doctors')
     # patient_id = db.Column(db.Integer, db.ForeignKey('users.uuid'))
     def __repr__(self):
         return '<Doctor: %r>' % self.title
@@ -47,7 +47,7 @@ class Connection(db.Model):
     uuid = db.Column(db.Integer, primary_key=True)
     doctor_id = db.Column(db.Integer, db.ForeignKey('doctors.uuid'))
     patient_id = db.Column(db.Integer, db.ForeignKey('patients.uuid'))
-    immunization = db.Column(db.Integer, db.ForeignKey('immunization.uuid'))
+    immunization = db.Column(db.Integer, db.ForeignKey('immunizations.uuid'))
     permission = db.Column(db.Boolean)
     def __repr__(self):
         return '<Patients %r>' % self.title
@@ -55,7 +55,9 @@ class Immunizations(db.Model):
     __tablename__ = 'immunizations'
     uuid = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(256), index = True)
-    connection_point = db.relationship('connections', backref='immunizaions')
+    patient_id = db.Column(db.Integer, db.ForeignKey('patients.uuid'))
+    child_id = db.Column(db.Integer, db.ForeignKey('child.uuid'))
+    # connection_point = db.relationship('connections', backref='immunizaions')
     def __repr__(self):
         return '<Patients %r>' % self.title
 
