@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 import os
 import graphene
 from graphene_sqlalchemy import SQLAlchemyObjectType, SQLAlchemyConnectionField
+from flask_graphql import GraphQLView
 
 app = flask.Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -24,7 +25,7 @@ class Patients(db.Model):
     username = db.Column(db.String(256), index=True, unique=True)
     parent = db.Column(db.Boolean)
     # doctors = db.relationship('Connections', backref='patients')
-    # child = db.relationship('Post', backref='author')
+    # child = db.relationship('Child', backref='patients')
     def __repr__(self):
         return '<Patient: %r>' % self.username
 class Child(db.Model):
@@ -38,8 +39,8 @@ class Doctors(db.Model):
     name = db.Column(db.String(256), index=True)
     title = db.Column(db.Text)
     licence = db.Column(db.String(256), index=True)
-    # doctors = db.relationship('connections', backref='doctors')
-    # patient_id = db.Column(db.Integer, db.ForeignKey('users.uuid'))
+    # doctors = db.relationship('Connections', backref='doctors')
+    patient_id = db.Column(db.Integer, db.ForeignKey('users.uuid'))
     def __repr__(self):
         return '<Doctor: %r>' % self.title
 class Connection(db.Model):
@@ -57,9 +58,45 @@ class Immunizations(db.Model):
     name = db.Column(db.String(256), index = True)
     patient_id = db.Column(db.Integer, db.ForeignKey('patients.uuid'))
     child_id = db.Column(db.Integer, db.ForeignKey('child.uuid'))
-    # connection_point = db.relationship('connections', backref='immunizaions')
+    # connection_point = db.relationship('Connections', backref='immunizaions')
     def __repr__(self):
         return '<Patients %r>' % self.title
+
+#Schema Objects
+class ParentObject(SQLAlchemyObjectType):
+    class meta:
+        model = Patients
+        interfaces = (graphene.relay.Node, )
+
+class ChildObject(SQLAlchemyObjectType):
+    class meta:
+        model = Child
+        interfaces = (graphene.relay.Node, )
+
+class DoctorObject(SQLAlchemyObjectType):
+    class meta:
+        model = Doctors
+        interfaces = (graphene.relay.Node, )
+
+class ConnectionObject(SQLAlchemyObjectType):
+    class meta:
+        model = Connection
+        interfaces = (graphene.relay.Node, )
+
+class ImmunizationObject(SQLAlchemyObjectType):
+    class meta:
+        model = Immunizations
+        interfaces = (graphene.relay.Node, )
+
+class Query(graphene.ObjectType):
+    node = graphene.relay.Node.Field()
+    all_Patients = SQLAlchemyConnectionField(PatientObject)
+    all_children = SQLAlchemyConnectionField(ChildObject)
+    all_Doctors = SQLAlchemyConnectionField(DoctorObject)
+    all_Connections = SQLAlchemyConnectionField(ConnectionObject)
+    all_Immunizations = SQLAlchemyConnectionField(ImmunizationObject)
+
+schema = graphene.Schema(query=Query)
 
 
 @app.route('/', methods=['GET'])
